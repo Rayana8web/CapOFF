@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import Category, Brand, Product, ProductBrand
+from .models import Category, Brand, Product,  ProductBrand, Banner
+
+class BannerListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        exclude = ('is_active', )
+
 
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,13 +17,14 @@ class BrandListSerializer(serializers.ModelSerializer):
         model = Brand
         fields = ('id', 'title', 'logo')
 
+
 class ProductListSerializer(serializers.ModelSerializer):
-    category = CategoryListSerializer(read_only=True)
-    brand = serializers.SerializerMethodField()
+    category = CategoryListSerializer()
+    brands = serializers.SerializerMethodField(many=True)
 
     class Meta:
         model = Product
-        fields = ('id','title', 'old_price', 'new_price', 'description', 'created_at', 'is_active')
+        fields = ('id','brands', 'category',  'title', 'old_price', 'new_price', 'description', 'created_at', 'is_active')
 
     def get_brand(self, obj):
         pb = ProductBrand.objects.filter(product=obj).select_related("brand").first()

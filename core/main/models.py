@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+from .choices import BannerLocationEnum
+
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
@@ -10,11 +12,11 @@ class Category(models.Model):
 
 
 
-class Size(models.Model):
-    title = models.CharField(max_length=50)
+#class Size(models.Model):
+ #   title = models.CharField(max_length=50)
 
-    def __str__(self):
-        return self.title
+  #  def __str__(self):
+  #      return self.title
 
 
 
@@ -30,16 +32,27 @@ class Brand(models.Model):
 class Product(models.Model):
     title = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    old_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    new_price = models.DecimalField(max_digits=10, decimal_places=2)
+    brands = models.ManyToManyField(Brand)
     description = models.TextField(blank=True, null=True)
+    cover = models.ImageField(upload_to='media/product_covers')
+    old_price = models.DecimalField(max_digits=10, decimal_places=2)
+    new_price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
 
+class Banner(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=17, choices=BannerLocationEnum.choices)
+    cover = models.ImageField(upload_to='media/banner_covers')
+    is_active = models.BooleanField(default=True)
 
+
+    def __str__(self):
+        return self.title
 
 #class ProductBrand(models.Model):
   #  product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -47,16 +60,16 @@ class Product(models.Model):
 
 
 
-class Storage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    size = models.ForeignKey(Size, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=0)
+#class Storage(models.Model):
+ #   product = models.ForeignKey(Product, on_delete=models.CASCADE)
+  #  size = models.ForeignKey(Size, on_delete=models.CASCADE)
+  #  quantity = models.PositiveIntegerField(default=0)
 
 
 
-class Basket(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+#class Basket(models.Model):
+   # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
 
@@ -68,12 +81,12 @@ class Basket(models.Model):
 
 
 
-class Order(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    update_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=50, default='pending')
+#class Order(models.Model):
+  #  user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+  #  total_price = models.DecimalField(max_digits=10, decimal_places=2)
+   # created_at = models.DateTimeField(auto_now_add=True)
+   # update_at = models.DateTimeField(auto_now=True)
+   # status = models.CharField(max_length=50, default='pending')
 
 
 #class OrderItems(models.Model):
@@ -83,6 +96,6 @@ class Order(models.Model):
 
 
 
-class Favorite(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+#class Favorite(models.Model):
+   # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+   # product = models.ForeignKey(Product, on_delete=models.CASCADE)
