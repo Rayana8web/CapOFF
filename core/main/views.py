@@ -1,7 +1,7 @@
-
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db models import Q
+from django.db.models import Q
+
 from .models import Product, Category, Brand, Banner
 from .serializers import ProductListSerializer, CategoryListSerializer, BrandListSerializer, BannerListSerializer
 
@@ -11,7 +11,8 @@ class IndexView(APIView):
         index_banners = Banner.objects.filter(Q(location='index_head') | Q(location='index_middle'), is_active=True)
         popular_brands = Brand.objects.all()[:4]
         best_seller_products = Product.objects.all()[:4]
-        discounted_products =Product.objects.filter(new_price_isnull=False)[:4]
+        discounted_products = Product.objects.filter(new_price__isnull=False)[:4]
+
         products = Product.objects.filter(is_active=True)
         categories = Category.objects.all()
         brands = Brand.objects.all()
