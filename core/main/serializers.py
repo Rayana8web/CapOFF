@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Category, Brand, Product,  ProductBrand, Banner
+from .models import (Category, Brand, Product,  ProductBrand,
+                     Banner, Basket, BasketItem)
+
+
+
+
 
 class BannerListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,3 +41,28 @@ class ProductListSerializer(serializers.ModelSerializer):
             }
             for b in pbs
         ]
+
+
+
+
+class BasketItemListSerializer(serializers.ModelSerializer):
+    product_title = serializers.CharField(source="storage.product.title", read_only=True)
+    size = serializers.CharField(source="storage.size.title", read_only=True)
+    price = serializers.DecimalField(source="storage.product.new_price", read_only=True, max_digits=10, decimal_places=2)
+
+    class Meta:
+        model = BasketItem
+        fields = ["id", "storage", "product_title", "size", "price", "quantity", "created_at"]
+
+
+class BasketListSerializer(serializers.ModelSerializer):
+    items = BasketItemListSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Basket
+        fields = ["id", "user", "items", "total_price"]
+        read_only_fields = ["user", "total_price"]
+
+    def get_total_price(self, obj):
+        return obj.get_total_price()

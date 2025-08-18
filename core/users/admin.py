@@ -54,8 +54,8 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('username', 'email', 'created_date', 'role', 'is_admin')
-    list_filter = ('is_admin', 'role', 'created_date')
+    list_display = ('username', 'email', 'date_joined', 'role', 'is_admin')
+    list_filter = ('is_admin', 'role', 'date_joined')
     fieldsets = (
         (None, {'fields': (
             'password',
@@ -84,5 +84,5 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(OTP)
+
 

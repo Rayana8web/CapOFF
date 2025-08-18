@@ -12,11 +12,11 @@ class Category(models.Model):
 
 
 
-#class Size(models.Model):
- #   title = models.CharField(max_length=50)
+class Size(models.Model):
+    title = models.CharField(max_length=50)
 
-  #  def __str__(self):
-  #      return self.title
+    def __str__(self):
+        return self.title
 
 
 
@@ -60,42 +60,47 @@ class ProductBrand(models.Model):
 
 
 
-#class Storage(models.Model):
- #   product = models.ForeignKey(Product, on_delete=models.CASCADE)
-  #  size = models.ForeignKey(Size, on_delete=models.CASCADE)
-  #  quantity = models.PositiveIntegerField(default=0)
+class Storage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
 
 
 
-#class Basket(models.Model):
-   # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+class Basket(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def get_total_price(self):
+        return sum([item.storage.product.new_price * item.quantity for item in self.items.all()])
+
+
+class BasketItem(models.Model):
+    basket = models.ForeignKey(Basket, related_name="items", on_delete=models.CASCADE)
+    storage = models.ForeignKey(Storage, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("basket", "storage")
 
 
 
-#class BasketItems(models.Model):
-  #  basket = models.ForeignKey(Basket, on_delete=models.CASCADE)
-  #  storage = models.ForeignKey(Storage, on_delete=models.CASCADE)
-  #  quantity = models.PositiveIntegerField(default=1)
-  # created_at = models.DateTimeField(auto_now_add=True)
+
+class Order(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=50, default='pending')
+
+
+class OrderItems(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    storage = models.ForeignKey(Storage, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
 
 
 
-#class Order(models.Model):
-  #  user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-  #  total_price = models.DecimalField(max_digits=10, decimal_places=2)
-   # created_at = models.DateTimeField(auto_now_add=True)
-   # update_at = models.DateTimeField(auto_now=True)
-   # status = models.CharField(max_length=50, default='pending')
-
-
-#class OrderItems(models.Model):
-  #  order = models.ForeignKey(Order, on_delete=models.CASCADE)
-   # storage = models.ForeignKey(Storage, on_delete=models.CASCADE)
-   # quantity = models.PositiveIntegerField(default=1)
-
-
-
-#class Favorite(models.Model):
-   # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-   # product = models.ForeignKey(Product, on_delete=models.CASCADE)
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
