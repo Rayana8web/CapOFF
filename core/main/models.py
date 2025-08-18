@@ -104,3 +104,6 @@ class OrderItems(models.Model):
 class Favorite(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("user", "product") #один и тот же товар не добавится , класс мета для настроек внешних настроек

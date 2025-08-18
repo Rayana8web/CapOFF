@@ -2,9 +2,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 from rest_framework import status, permissions
-from .models import Product, Category, Brand, Banner, Basket, BasketItem, Storage
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListAPIView
+from .models import Product, Category, Brand, Banner, Basket, BasketItem, Storage, Favorite
 from .serializers import (ProductListSerializer, CategoryListSerializer, BrandListSerializer,
-                          BannerListSerializer, BasketListSerializer)
+                          BannerListSerializer, BasketListSerializer, FavoriteSerializer)
 
 
 class IndexView(APIView):
@@ -117,3 +119,27 @@ class ClearBasketView(APIView):
         basket.items.all().delete()
         serializer = BasketListSerializer(basket)
         return Response(serializer.data)
+
+
+class ToggleFavoriteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, product_id):
+        product = Product.objects.get(id=product_id)
+        favorite, created = Favorite.objects.get_or_create(
+            user=request.user,
+            product=product
+        )
+        if not created:
+            favorite.delete()
+            return Response({"detail": "Удалено из избранного"}, status=status.HTTP_200_OK)
+
+        return Response({"detail": "Добавлено в избранное"}, status=status.HTTP_201_CREATED)
+
+
+class FavoriteListView(ListAPIView):
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import CatalogView, BasketView, AddToBasketView, RemoveFromBasketView, ClearBasketView
+from .views import CatalogView, BasketView, AddToBasketView, RemoveFromBasketView, ClearBasketView, FavoriteListView, ToggleFavoriteView
 
 
 urlpatterns = [
@@ -10,4 +10,6 @@ urlpatterns = [
     path("basket/add/", AddToBasketView.as_view(), ),
     path("basket/remove/", RemoveFromBasketView.as_view(), ),
     path("basket/clear/", ClearBasketView.as_view(),),
+    path("favorites/", FavoriteListView.as_view(), ),
+    path("favorites/<int:product_id>/toggle/", ToggleFavoriteView.as_view(),)
 ]
