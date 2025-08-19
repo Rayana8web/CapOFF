@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import (Category, Brand, Product,  ProductBrand,
-                     Banner, Basket, BasketItem, Favorite)
+                     Banner, Basket, BasketItem, Favorite, Order, OrderItems )
+
+
+
 
 
 
@@ -74,3 +77,17 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
         fields = ["id", "product", "product_title", "product_price"]
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItems
+        fields = ["id", "storage", "quantity"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "user", "total_price", "status", "created_at", "items"]
+        read_only_fields = ["user", "total_price", "status", "created_at", "items"]

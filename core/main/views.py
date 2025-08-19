@@ -7,6 +7,13 @@ from rest_framework.generics import ListAPIView
 from .models import Product, Category, Brand, Banner, Basket, BasketItem, Storage, Favorite
 from .serializers import (ProductListSerializer, CategoryListSerializer, BrandListSerializer,
                           BannerListSerializer, BasketListSerializer, FavoriteSerializer)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+from .filters import ProductFilter
+from rest_framework.response import Response
+from products.models import Basket, Order, OrderItems
+from .serializers import OrderSerializer
+from rest_framework import generics
 
 
 class IndexView(APIView):
@@ -143,3 +150,58 @@ class FavoriteListView(ListAPIView):
 
     def get_queryset(self):
         return Favorite.objects.filter(user=self.request.user)
+
+
+
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all().order_by("-created_at")
+    serializer_class = ProductListSerializer
+
+    # подключаем фильтры
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_class = ProductFilter
+
+    # поиск по названию и описанию
+    search_fields = ["title", "description"]
+
+    # сортировка (по цене, по дате)
+    ordering_fields = ["new_price", "created_at"]
+
+
+
+class CreateOrderView(generics.CreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+
+        # проверяем, есть ли корзина
+        try:
+            basket = Basket.objects.get(user=user)
+        except Basket.DoesNotExist:
+            return Response({"detail": "Корзина пуста."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not basket.items.exists():
+            return Response({"detail": "Корзина пуста."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # считаем общую сумму
+        total_price = basket.get_total_price()
+
+        # создаём заказ
+        order = Order.objects.create(user=user, total_price=total_price, status="pending")
+
+        # переносим товары из корзины в заказ
+        for item in basket.items.all():
+            OrderItems.objects.create(
+                order=order,
+                storage=item.storage,
+                quantity=item.quantity
+            )
+
+        # очищаем корзину
+        basket.items.all().delete()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
